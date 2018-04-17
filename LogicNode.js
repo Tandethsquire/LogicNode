@@ -17,10 +17,10 @@ class LogicNode
 
 	get parent(){return this._parent}
 	set parent(val){this._parent = val}
-	
+
 	get unique(){return this._unique}
 	set unique(val){this._unique = counter; counter++}
-	
+
 	get value(){return this._value}
 	set value(val){this._value = val}
 
@@ -31,7 +31,7 @@ class LogicNode
 		{
 			if (this._children.length < this.expected())
 				this._children.push(child);
-			else {}
+			else {console.log("Too many children!")}
 		}
 		else
 			this._children = [];
@@ -58,42 +58,45 @@ class LogicNode
 			return 0;
 	}
 
-	complete()
+	isComplete()
 	{
-		return this.children.length == this.expected();		
+		return this.children.length == this.expected();
 	}
-	
+
 	collapse(method)
 	{
 		var i, kids = this.children.length;
-		if (!this.complete())
+		if (!this.isComplete())
 		{
-			console.log("Can't collapse node " + this.unique + ".");
+			console.log("Can't collapse node " + this.unique + ": number of children should be " + this.expected() + " and is actually " + this.children.length + ".");
 			return null;
 		}
 		switch (kids)
 		{
 			case 2:
 				if (method == "in")
-					this.value = "(" + this.children[0].value + " " + this.value + " " + this.children[1].value + ")";
+					this.value = "(" + this.children[0].collapse(method) + " " + this.value + " " + this.children[1].collapse(method) + ")";
 				else if (method == "pre")
-					this.value = this.value + " " + this.children[0].value + " " + this.children[1].value;
+					this.value = this.value + " " + this.children[0].collapse(method) + " " + this.children[1].collapse(method);
 				else if (method == "post")
-					this.value = this.children[0].value + " " + this.children[1].value + " " + this.value;
+					this.value = this.children[0].collapse(method) + " " + this.children[1].collapse(method) + " " + this.value;
 				break;
 			case 1:
 				if (method == "in")
-					this.value = "(" +  this.value + " " + this.children[0].value + ")";
+					this.value = "(" +  this.value + " " + this.children[0].collapse(method) + ")";
 				else if (method == "pre")
-					this.value = this.value + " " + this.children[0].value;
+					this.value = this.value + " " + this.children[0].collapse(method);
 				else if (method == "post")
-					this.value = this.children[0].value + " " + this.value;
+					this.value = this.children[0].collapse(method) + " " + this.value;
 				break;
+			case 0:
 			default:
 		}
-		for (i=0; i<kids; i++)
-			this.removeChild();
+		//for (i=0; i<kids; i++)
+		//	this.removeChild();
+		return this.value;
 	}
+
 }
 
 function shuffle(arr)
@@ -107,6 +110,19 @@ function shuffle(arr)
 		arr[j] = x;
 	}
 	return arr;
+}
+
+function int_to_binary_array(n, len)
+{
+	var outArr = [];
+	while (n>0)
+	{
+		outArr.push(n%2);
+		n = Math.floor(n/2);
+	}
+	while (outArr.length < len)
+		outArr.push(0);
+	return outArr.reverse();
 }
 
 function findNode(arr,unique)
@@ -196,34 +212,73 @@ function build_tree(nodeArr)
 	return mainArr;
 }
 
-function string_from_tree(nodeArr,method)
+function string_from_tree(elem,method)
 {
-	var tempArr = build_tree(nodeArr), i;
-	while (tempArr.length > 1)
+	var i, nodeArr;
+	if (elem instanceof Array)
 	{
-		var parent = tempArr[tempArr.length-1].parent;
-		if (parent == null)
+		if (elem[0] instanceof LogicNode)
+			nodeArr = elem;
+		else
+			nodeArr = build_tree(node_array_from_args(elem));
+	}
+	for (i=0; i<nodeArr.length; i++)
+	{
+		if (nodeArr[i].parent == null)
+		{
+			nodeArr[i].collapse(method);
 			break;
-		if (parent.children.length==1)
-		{
-			tempArr.splice(findNode(tempArr,parent.children[0].unique),1);
-			parent.collapse(method);
-		}
-		else if (parent.children.length == 2)
-		{
-			tempArr.splice(findNode(tempArr,parent.children[0].unique),1);
-			tempArr.splice(findNode(tempArr,parent.children[1].unique),1);
-			parent.collapse(method);
 		}
 	}
-	var result = tempArr[0].value;
+	var result = nodeArr[0].value;
 	if (method == "in")
 		result = result.slice(1,result.length-1);
 	return result;
 }
 
-var testCpts = make_components(6,4,2);
-var testNodes = build_tree(node_array_from_args(testCpts));
-console.log(string_from_tree(testNodes,"in"));
-console.log(string_from_tree(testNodes,"pre"));
-console.log(string_from_tree(testNodes,"post"));
+function valuation(valArr,vals)
+{
+	var i, nodeArr = build_tree(node_array_from_args(valArr)), tempArr = [];
+	for (i=0; i<nodeArr.length; i++)
+	{
+		var nd = nodeArr[i];
+		if (nd.value == "IMPLIES")
+		{
+			nd.value = "OR";
+			var tempnd = nd.children[0];
+			var notNode = new LogicNode("NOT");
+			nd.removeChild();
+			nd.addChild(notNode);
+			notNode.addChild(tempnd);
+			tempArr.push(nd);
+			tempArr.push(notNode);
+		}
+		else
+		{
+			tempArr.push(nd);
+		}
+	}
+	var infix = string_from_tree(tempArr,"in");
+	infix = infix.replace(/NOT/g,"!").replace(/AND/g,"\&\&").replace(/OR/g,"||");
+	for (i=0; i<vals.length; i++)
+	{
+		var reg = new RegExp(String.fromCharCode(80+i),"g");
+		infix = infix.replace(reg,vals[i]);
+	}
+	return Boolean(eval(infix));
+}
+
+function truth_table(valArr, noofvals)
+{
+	var outArr = [], i;
+	for (i=Math.pow(2,noofvals)-1; i>=0; i--)
+		outArr.push(valuation(valArr,int_to_binary_array(i,noofvals)));
+	return outArr;
+}
+
+var testCpts = make_components(6,3,2);
+console.log(string_from_tree(testCpts,"in"));
+console.log(string_from_tree(testCpts,"pre"));
+console.log(string_from_tree(testCpts,"post"));
+console.log(valuation(testCpts,[1,0,1]));
+console.log(truth_table(testCpts,3));
