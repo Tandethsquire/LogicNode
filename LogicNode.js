@@ -1,5 +1,4 @@
 /*Comments!
-To do: add valuations to this script (don't forget about the "implies" fuckery)
 Parse tree visualisation!
 */
 
@@ -92,8 +91,6 @@ class LogicNode
 			case 0:
 			default:
 		}
-		//for (i=0; i<kids; i++)
-		//	this.removeChild();
 		return this.value;
 	}
 
@@ -181,19 +178,11 @@ function make_components(operands,variables,nots)
 	return outArr;
 }
 
-function node_array_from_args(valArr)
-{
-	var outArr = [], i;
-	for (i=0; i<valArr.length; i++)
-		outArr.push(new LogicNode(valArr[i]));
-	return outArr;
-}
-
-function build_tree(nodeArr)
+function build_tree(valArr)
 {
 	var mainArr = [], i;
-	for (i=0; i<nodeArr.length; i++)
-		mainArr.push(copyNode(nodeArr[i]));
+	for (i=0; i<valArr.length; i++)
+		mainArr.push(new LogicNode(valArr[i]));
 	var ind = 0;
 	for (i=0; i<mainArr.length; i++)
 	{
@@ -220,7 +209,7 @@ function string_from_tree(elem,method)
 		if (elem[0] instanceof LogicNode)
 			nodeArr = elem;
 		else
-			nodeArr = build_tree(node_array_from_args(elem));
+			nodeArr = build_tree(elem);
 	}
 	for (i=0; i<nodeArr.length; i++)
 	{
@@ -238,7 +227,7 @@ function string_from_tree(elem,method)
 
 function valuation(valArr,vals)
 {
-	var i, nodeArr = build_tree(node_array_from_args(valArr)), tempArr = [];
+	var i, nodeArr = build_tree(valArr), tempArr = [];
 	for (i=0; i<nodeArr.length; i++)
 	{
 		var nd = nodeArr[i];
