@@ -12,6 +12,7 @@ class LogicNode
 		this.value = value;
 		this.children = [];
 		this.unique = null;
+		this.level = null;
 	}
 
 	get parent(){return this._parent}
@@ -30,16 +31,30 @@ class LogicNode
 		{
 			if (this._children.length < this.expected())
 				this._children.push(child);
-			else {console.log("Too many children!")}
+			else {}
 		}
 		else
 			this._children = [];
+	}
+
+	get level(){return this._level}
+	set level(val)
+	{
+		var lvl = 0;
+		var focusnode = this;
+		while (focusnode.parent != null)
+		{
+			lvl++;
+			focusnode = focusnode.parent;
+		}
+		this._level = lvl;
 	}
 
 	addChild(child)
 	{
 		this.children = child;
 		child.parent = this;
+		child.level = null;
 	}
 
 	removeChild()
@@ -57,15 +72,10 @@ class LogicNode
 			return 0;
 	}
 
-	isComplete()
-	{
-		return this.children.length == this.expected();
-	}
-
 	collapse(method)
 	{
 		var i, kids = this.children.length;
-		if (!this.isComplete())
+		if (kids != this.expected())
 		{
 			console.log("Can't collapse node " + this.unique + ": number of children should be " + this.expected() + " and is actually " + this.children.length + ".");
 			return null;
@@ -131,11 +141,6 @@ function findNode(arr,unique)
 			return i;
 	}
 	return -1;
-}
-
-function copyNode(original)
-{
-	return new LogicNode(original.value);
 }
 
 function isValid(arr)
@@ -227,7 +232,7 @@ function string_from_tree(elem,method)
 
 function valuation(valArr,vals)
 {
-	var i, nodeArr = build_tree(valArr), tempArr = [];
+	var i, nodeArr = build_tree(valArr);
 	for (i=0; i<nodeArr.length; i++)
 	{
 		var nd = nodeArr[i];
@@ -239,15 +244,10 @@ function valuation(valArr,vals)
 			nd.removeChild();
 			nd.addChild(notNode);
 			notNode.addChild(tempnd);
-			tempArr.push(nd);
-			tempArr.push(notNode);
-		}
-		else
-		{
-			tempArr.push(nd);
+			nodeArr.push(notNode);
 		}
 	}
-	var infix = string_from_tree(tempArr,"in");
+	var infix = string_from_tree(nodeArr,"in");
 	infix = infix.replace(/NOT/g,"!").replace(/AND/g,"\&\&").replace(/OR/g,"||");
 	for (i=0; i<vals.length; i++)
 	{
@@ -265,9 +265,11 @@ function truth_table(valArr, noofvals)
 	return outArr;
 }
 
+// TESTING STUFF: none of this matters!
 var testCpts = make_components(6,3,2);
+var testTree = build_tree(testCpts);
+console.log(testTree);
 console.log(string_from_tree(testCpts,"in"));
 console.log(string_from_tree(testCpts,"pre"));
 console.log(string_from_tree(testCpts,"post"));
-console.log(valuation(testCpts,[1,0,1]));
 console.log(truth_table(testCpts,3));
