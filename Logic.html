@@ -1,28 +1,41 @@
 <!DOCTYPE html>
 <head>
-<title>Insert Title Here</title>
+<title>Logic Node Testing Ground</title>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/latest.js?config=TeX-MML-AM_CHTML' async></script>
 </head>
 <body>
-<div id='outp'></div>
-<!-- <script type='text/javascript'>
-// Script here
-function arrayToString(elem)
-{
-	var outstr, i=0;
-	if (elem instanceof Array)
-	{
-		outstr = "(";
-		while (i<elem.length)
-		{
-			outstr += arrayToString(elem[i]) + ",";
-			i++;
-		}
-		outstr = outstr.slice(0,outstr.length-1) + ")";
-	}
-	else
-		outstr = elem;
-	return outstr;
-}
-</script> -->
+<div id='output'><h2>Statements</h2></div>
 <script type='text/javascript' src='LogicNode.js'></script>
+<script type='text/javascript'>
+function beautify(logicstr)
+{
+  logicstr = logicstr.replace(/\((NOT\s.)\)/g,'$1');
+  logicstr = logicstr.replace(/AND/g,"\\wedge").replace(/OR/g,"\\vee").replace(/IMPLIES/g,"\\rightarrow").replace(/NOT/g,"\\neg");
+  return "\\(" + logicstr + "\\)";
+}
+var ops = 6, args = 3, nots = 2, i, j;
+var testCpts = make_components(ops,args,nots);
+var indiv = document.getElementById('output');
+indiv.innerHTML += "Normal notation: " + beautify(string_from_tree(testCpts,"in")) + "<br>";
+indiv.innerHTML += "Polish notation: " + beautify(string_from_tree(testCpts,"pre")) + "<br>";
+indiv.innerHTML += "Reverse Polish notation: " + beautify(string_from_tree(testCpts,"post")) + "<br>";
+var tablestr = "<h2>Truth Table</h2><table><tr>";
+for (i=0; i<args; i++)
+{
+  tablestr += "<th align='center'>" + String.fromCharCode(80+i) + "</th>";
+}
+tablestr += "<th>Statement</th></tr>";
+for (i=Math.pow(2,args)-1; i>=0; i--)
+{
+  tablestr += "<tr>";
+  var temparr = int_to_binary_array(i,args);
+  for (j=0; j<temparr.length; j++)
+  {
+    tablestr += "<td align='center'>" + temparr[j] + "</td>";
+  }
+  tablestr += "<td align='center'>" + valuation(testCpts,temparr) + "</td></tr>";
+}
+tablestr += "</table>"
+indiv.innerHTML += tablestr;
+</script>
 </body>

@@ -243,6 +243,7 @@ function valuation(valArr,vals)
 			var notNode = new LogicNode("NOT");
 			nd.removeChild();
 			nd.addChild(notNode);
+			nd.children.reverse();
 			notNode.addChild(tempnd);
 			nodeArr.push(notNode);
 		}
@@ -264,12 +265,3 @@ function truth_table(valArr, noofvals)
 		outArr.push(valuation(valArr,int_to_binary_array(i,noofvals)));
 	return outArr;
 }
-
-// TESTING STUFF: none of this matters!
-var testCpts = make_components(6,3,2);
-var testTree = build_tree(testCpts);
-console.log(testTree);
-console.log(string_from_tree(testCpts,"in"));
-console.log(string_from_tree(testCpts,"pre"));
-console.log(string_from_tree(testCpts,"post"));
-console.log(truth_table(testCpts,3));
