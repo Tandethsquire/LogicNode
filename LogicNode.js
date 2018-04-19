@@ -341,7 +341,7 @@ function tree_to_canvas(valArr,cvs)
 		if (node.value.length == 1)
 			textoffset = 10;
 		else
-			textoffset = -10;
+			textoffset = -5;
 		ctx.textAlign = "center";
 		ctx.fillText(node.value,node.coords[0],node.coords[1]+textoffset);
 	}
