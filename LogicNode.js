@@ -54,30 +54,8 @@ class LogicNode
 	get coords(){return this._coords}
 	set coords(val)
 	{
-		if (this.level != 0)
-		{
-			if (this.parent.expected() == 1)
-			{
-				this._coords = [this.parent.coords[0],this.parent.coords[1]+50];
-			}
-			else
-			{
-				var tempnode = this, offset = 1;
-				while (tempnode.parent != null)
-				{
-					tempnode = tempnode.parent;
-					offset *= 0.9;
-				}
-				if (this.parent.children[0].unique == this.unique)
-				{
-					this._coords = [this.parent.coords[0] - 100*offset, this.parent.coords[1] + 50];
-				}
-				else
-					this._coords = [this.parent.coords[0] + 100*offset, this.parent.coords[1] + 50];
-			}
-			return;
-		}
-		this._coords = val;
+		if (val instanceof Array && val.length == 2)
+			this._coords = val;
 	}
 
 	addChild(child)
@@ -143,10 +121,16 @@ function shuffle(arr)
 	for (i=arr.length-1; i>0; i--)
 	{
 		j = Math.floor(Math.random()*(i+1));
-		x = arr[i];
-		arr[i] = arr[j];
-		arr[j] = x;
+		arr = swap(arr,i,j);
 	}
+	return arr;
+}
+
+function swap(arr, i, j)
+{
+	var x = arr[i];
+	arr[i] = arr[j];
+	arr[j] = x;
 	return arr;
 }
 
@@ -297,40 +281,68 @@ function truth_table(valArr, noofvals)
 	return outArr;
 }
 
+function set_coords(nodeArr)
+{
+	var maxlvl = 0, i, off = 25;
+	for (i=0; i<nodeArr.length; i++)
+	{
+		if (nodeArr[i].level > maxlvl)
+			maxlvl = nodeArr[i].level;
+	}
+	for (i=0; i<nodeArr.length; i++)
+	{
+		var ycoord = off*nodeArr[i].level, xcoord = 0, focalnode = nodeArr[i];
+		while (focalnode.parent != null)
+		{
+			var par = focalnode.parent;
+			if (par.children[0].unique == focalnode.unique)
+				xcoord -= (maxlvl-focalnode.level+1)*off;
+			else
+				xcoord += (maxlvl-focalnode.level+1)*off;
+			focalnode = focalnode.parent;
+		}
+		nodeArr[i].coords = [xcoord,ycoord];
+	}
+	return nodeArr;
+}
+
 function tree_to_canvas(valArr,cvs)
 {
 	var c = document.getElementById(cvs);
 	var ctx = c.getContext("2d");
-	var nodes = build_tree(valArr), i, j;
-	var maxright = 0, maxleft = 0, maxheight = 0, maxlevel = 0;
+	var nodes = set_coords(build_tree(valArr)), i;
+	console.log(nodes);
+	var maxleft = 0, maxright = 0, maxdepth = 0;
 	for (i=0; i<nodes.length; i++)
 	{
-		if (nodes[i].coords[0]>maxright)
-			maxright = nodes[i].coords[0];
-		if (nodes[i].coords[0]<maxleft)
+		if (nodes[i].coords[0] < maxleft)
 			maxleft = nodes[i].coords[0];
-		if (nodes[i].coords[1]>maxheight)
-			maxheight = nodes[i].coords[1];
+		if (nodes[i].coords[0] > maxright)
+			maxright = nodes[i].coords[0];
+		if (nodes[i].coords[1] > maxdepth)
+			maxdepth = nodes[i].coords[1];
 	}
-	c.width = maxright - maxleft + 100, c.height = maxheight+100;
-	var xoffset = -maxleft + 50, yoffset = 50;
+	c.width = maxright - maxleft + 100, c.height = maxdepth + 100;
 	for (i=0; i<nodes.length; i++)
+		nodes[i].coords = [nodes[i].coords[0]+50-maxleft,nodes[i].coords[1]+50];
+	for (j=0; j<nodes.length; j++)
 	{
-		var node = nodes[i];
-		var x = node.coords[0], y = node.coords[1];
-		for (j=0; j<node.children.length; j++)
+		var node = nodes[j];
+		if (node.expected()!=0)
 		{
-			ctx.moveTo(x+xoffset,y+yoffset);
-			ctx.lineTo(node.children[j].coords[0]+xoffset,node.children[j].coords[1]+yoffset);
-			ctx.fillStyle = "black";
-			ctx.stroke();
+			for (i=0; i<node.children.length; i++)
+			{
+				ctx.moveTo(node.coords[0],node.coords[1]);
+				ctx.lineTo(node.children[i].coords[0],node.children[i].coords[1]);
+				ctx.stroke();
+			}
 		}
-		if (node.expected()==0)
-			var textoffset = 10;
+		var textoffset = 0;
+		if (node.value.length == 1)
+			textoffset = 10;
 		else
-			var textoffset = -5;
+			textoffset = -10;
 		ctx.textAlign = "center";
-		ctx.fillStyle = "blue";
-		ctx.fillText(node.value,x+xoffset,y+yoffset+textoffset);
+		ctx.fillText(node.value,node.coords[0],node.coords[1]+textoffset);
 	}
 }

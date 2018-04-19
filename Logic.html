@@ -19,7 +19,7 @@ function beautify(logicstr)
   logicstr = logicstr.replace(/AND/g,"\\wedge").replace(/OR/g,"\\vee").replace(/IMPLIES/g,"\\rightarrow").replace(/NOT/g,"\\neg");
   return "\\(" + logicstr + "\\)";
 }
-var ops = 8, args = 4, nots = 3, i, j;
+var ops = 6, args = 3, nots = 2, i, j;
 var testCpts = make_components(ops,args,nots);
 var indiv = document.getElementById('output');
 indiv.innerHTML += "Normal notation: " + beautify(string_from_tree(testCpts,"in")) + "<br>";
