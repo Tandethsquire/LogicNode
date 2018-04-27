@@ -55,6 +55,16 @@ Numbas.addExtension('Logic',['jme','jme-display','math'],function(logic)
 {
   var logicScope = logic.scope;
 
+  /** Create a logic node with a given node value.
+  * @constructor
+  * @memberof logic
+  * @property {string} value
+  * @property {LogicNode} parent
+  * @property {Array[LogicNode]} children
+  *
+  * @param {string} value
+  */
+
   var LogicNode = logic.LogicNode = function(value)
   {
     this.parent = null;
@@ -63,8 +73,21 @@ Numbas.addExtension('Logic',['jme','jme-display','math'],function(logic)
   }
 
   LogicNode.prototype = {
+    /** String representation of the node value.
+    * @returns {string}
+    */
     toString: function() { return this.value; },
-    toLaTeX: function() {return this.value; },
+    /** LaTeX representation of the node value.
+    * @returns {string}
+    */
+    toLaTeX: function(){
+      var val = this.value;
+      val = val.replace(/AND/g,"\\wedge").replace(/OR/g,"\\vee").replace(/IMPLIES/g,"\\rightarrow").replace(/NOT/g,"\\neg");
+      return val;
+    },
+    /** Returns the number of children this node is expected to have.
+    * @returns {string}
+    */
     expected: function()
     {
       if (this.value == "AND" || this.value == "OR" || this.value == "IMPLIES")
@@ -74,6 +97,12 @@ Numbas.addExtension('Logic',['jme','jme-display','math'],function(logic)
       else
         return 0;
     },
+    /** Add a child to the node. The child is added to children, and the child
+    is assigned the parent.
+    * @param {LogicNode}
+    *
+    * @returns {LogicNode}
+    */
     add_child: function(child)
     {
       if (this.children.length < this.expected())
@@ -83,10 +112,21 @@ Numbas.addExtension('Logic',['jme','jme-display','math'],function(logic)
       }
       return this;
     },
+    /** Removes the first child from the node. The child maintains the node as
+    its parent (this is not a problem later due to the way collapse() works)
+    * @param {LogicNode}
+    */
     remove_child: function()
     {
       this.children.shift();
     },
+    /** Collapses a node. Recursive: combines the collapsed value of the children
+    node(s) appropriately dependent on the value of the node. The method is 'pre',
+    'in' or 'post' (see string_from_tree)
+    * @param {string}
+    *
+    * @returns {string}
+    */
     collapse: function(method)
     {
       var i, kids =  this.children.length;
@@ -115,6 +155,12 @@ Numbas.addExtension('Logic',['jme','jme-display','math'],function(logic)
     }
   }
 
+  /** Takes a set of node values in Polish notation order (usually from make_components)
+  and assigns each node its parent and children.
+  * @param {Array[string]}
+  *
+  * @returns {Array[LogicNode]}
+  */
   function build_tree(valArr)
   {
     var mainArr = [], i;
@@ -138,6 +184,14 @@ Numbas.addExtension('Logic',['jme','jme-display','math'],function(logic)
     return mainArr;
   }
 
+  /** Takes a set of node values and constructs the logical statement.
+  The method is either 'pre', 'in' or 'post' for Polish, standard or reverse
+  Polish notation, respectively.
+  * @param {Array[string]}
+  * @param {string}
+  *
+  * @returns {string}
+  */
   function string_from_tree(valArr,method)
   {
     var nodeArr = build_tree(valArr);
@@ -145,6 +199,13 @@ Numbas.addExtension('Logic',['jme','jme-display','math'],function(logic)
     return nodeArr[0].value;
   }
 
+  /** Values a statement given a set of truth values for its variables.
+  The vals can be presented as integers in {0,1} or as Boolean values.
+  * @param {Array[string]}
+  * @param {Array[int]}
+  *
+  * @returns {Boolean}
+  */
   function valuation(valArr,vals)
   {
   	var i, nodeArr = build_tree(valArr);
@@ -173,6 +234,12 @@ Numbas.addExtension('Logic',['jme','jme-display','math'],function(logic)
   	return Boolean(eval(infix));
   }
 
+  /** Generates a full truth table for a statement.
+  * @param {Array[string]}
+  * @param {int}
+  *
+  * @returns {Array[Boolean]}
+  */
   function truth_table(valArr, noofvals)
   {
   	var outArr = [], i;
