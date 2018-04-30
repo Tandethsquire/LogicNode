@@ -155,8 +155,8 @@ Numbas.addExtension('Logic',['jme','jme-display','math'],function(logic)
     }
   }
 
-  /** Takes a set of node values in Polish notation order (usually from make_components)
-  and assigns each node its parent and children.
+  /** Takes a set of node values in specific order (usually from make_components)
+  and assigns each node its parent and children. See readme for ordering.
   * @param {Array[string]}
   *
   * @returns {Array[LogicNode]}
@@ -194,8 +194,15 @@ Numbas.addExtension('Logic',['jme','jme-display','math'],function(logic)
   */
   function string_from_tree(valArr,method)
   {
-    var nodeArr = build_tree(valArr);
-    nodeArr[0].collapse(method);
+    var i, nodeArr = build_tree(valArr);
+    for (i=0; i<nodeArr.length; i++)
+    {
+      if (nodeArr[i].parent == null)
+      {
+        nodeArr[i].collapse(method);
+        break;
+      }
+    }
     return nodeArr[0].value;
   }
 
@@ -248,6 +255,19 @@ Numbas.addExtension('Logic',['jme','jme-display','math'],function(logic)
   	return outArr;
   }
 
+  /** 'Prettifies' the output of a string: adds in the LaTeX symbols and strips out
+  some unecessary brackets.
+  * @param {string}
+  *
+  * @returns {string}
+  */
+  function texify(rawstr)
+  {
+    rawstr = rawstr.replace(/\((NOT\s.)\)/g,'$1');
+    rawstr = rawstr.replace(/AND/g,"\\wedge").replace(/OR/g,"\\vee").replace(/IMPLIES/g,"\\rightarrow").replace(/NOT/g,"\\neg");
+    return "$$" + rawstr + "$$";
+  }
+
   var funcObj = Numbas.jme.funcObj;
   var TString = Numbas.jme.types.TString;
   var TNum = Numbas.jme.types.TNum;
@@ -258,5 +278,6 @@ Numbas.addExtension('Logic',['jme','jme-display','math'],function(logic)
   logicScope.addFunction(new funcObj('string_from_tree',[TList,TString],TString, function(arr,how){return string_from_tree(arr,how);}, {unwrapValues: true}));
   logicScope.addFunction(new funcObj('truth_value',[TList,TList],TBool, function(arr,vals){return valuation(arr,vals);}, {unwrapValues: true}));
   logicScope.addFunction(new funcObj('truth_table_results',[TList,TNum],TList,function(str,noofvals){ return truth_table(str,noofvals);}, {unwrapValues: true}));
+  logicScope.addFunction(new funcObj('texify',[TString], TString, function(str){return texify(str);},{unwrapValues: true}));
 
 })
