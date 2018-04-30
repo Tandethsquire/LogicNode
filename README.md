@@ -3,11 +3,11 @@ Logic Node Package
 
 A <a href="https://www.Numbas.org.uk">Numbas</a> extension for dealing with mathematical logic. It is in two parts: a pure JavaScript implementation and the converted form for use in NUMBAS.
 
-Many of the problems that arise in logic seem difficult to randomise with *vanilla* NUMBAS functions: for example, suppose you want to randomly generate a statement like "not Q and (((Q implies (P or R)) implies P) and not P)" and its conversion to <a href="https://en.wikipedia.org/wiki/Polish_notation">Polish notation</a> or <a href="https://en.wikipedia.org/wiki/Reverse_Polish_notation">Reverse Polish notation</a>. Suppose you wish to be able to generate the truth table for such a statement, or produce random such statements. This will do that!
+Many of the problems that arise in logic seem difficult to randomise with *vanilla* NUMBAS functions: for example, suppose you want to randomly generate a statement like "not Q and (((Q implies (P or R)) implies P) and not P)" and its conversion to <a href="https://en.wikipedia.org/wiki/Polish_notation">Polish notation</a> or <a href="https://en.wikipedia.org/wiki/Reverse_Polish_notation">Reverse Polish notation</a>. Suppose you wish to be able to generate the truth table for such a statement. This will do that!
 
 This defines a new object: a **logic node**. Any logic node has a parent, and some children: an OR statement requires two arguments, and so takes two children. In this way, the connections between the nodes produce the parse tree of the system.
 
-#### The tree construction works with a set of node values given in Polish notation!
+#### The tree construction works with a set of node values given in 'level order'. See below for details.
 
 Once the parse tree is built, the statements can be constructed in any of the notational forms, and the truth of the statement given any set of truth values for its parameters can be determined.
 
