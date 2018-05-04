@@ -192,9 +192,13 @@ Numbas.addExtension('Logic',['jme','jme-display','math'],function(logic)
   *
   * @returns {string}
   */
-  function string_from_tree(valArr,method)
+  function string_from_tree(elem,method)
   {
-    var i, nodeArr = build_tree(valArr);
+    var i, nodeArr;
+    if (elem[0] instanceof LogicNode)
+      nodeArr = elem;
+    else
+      nodeArr = build_tree(elem);
     for (i=0; i<nodeArr.length; i++)
     {
       if (nodeArr[i].parent == null)
