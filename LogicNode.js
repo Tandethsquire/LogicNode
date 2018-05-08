@@ -311,7 +311,6 @@ function tree_to_canvas(valArr,cvs)
 	var c = document.getElementById(cvs);
 	var ctx = c.getContext("2d");
 	var nodes = set_coords(build_tree(valArr)), i;
-	console.log(nodes);
 	var maxleft = 0, maxright = 0, maxdepth = 0;
 	for (i=0; i<nodes.length; i++)
 	{
@@ -345,4 +344,36 @@ function tree_to_canvas(valArr,cvs)
 		ctx.textAlign = "center";
 		ctx.fillText(node.value,node.coords[0],node.coords[1]+textoffset);
 	}
+}
+
+function copyArr(arr)
+{
+	var outarr = [], i;
+	for (i=0; i<arr.length; i++)
+	{
+		outarr.push(arr[i]);
+	}
+	return outarr;
+}
+
+function makeSyllogism(arr)
+{
+	if (arr.length>3)
+		return null;
+	var arr1 = copyArr(arr), arr2 = shuffle(copyArr(arr));
+	while (arr2[0]==arr1[2])
+		shuffle(arr2);
+	var args = arr1.concat(arr2);
+	console.log(args);
+	var connectives = shuffle([["All ","s"," are ","s"],["Some ",""," is a ",""],["No ","s"," are ","s"],["Some ",""," is not a ",""]]);
+	var i, tempstr = "";
+	for (i=0; i<3; i++)
+	{
+		var temparr = connectives[i];
+		if (i==2)
+			tempstr += "Therefore " + temparr[0].toLowerCase() + args[2*i] + temparr[1] + temparr[2] + args[2*i+1] + temparr[3] + ".";
+		else
+			tempstr += temparr[0] + args[2*i] + temparr[1] + temparr[2] + args[2*i+1] + temparr[3] + ";<br>";
+	}
+	return tempstr;
 }
