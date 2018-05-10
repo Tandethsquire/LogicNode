@@ -101,6 +101,38 @@ function genPatt()
   return outstr;
 }
 
+/** Pluralises a string. Definitely not complete, but works for a large variety of English words.
+* @param {String}
+*
+* @returns {String}
+*/
+function pluralise(st)
+{
+	var str = st;
+	if (isInArr(str,["sheep","fish","species","deer","series"]))
+		return str;
+	if (str!="human")
+		str = str.replace(/(.*)man$/,'$1'+"men");
+	str = str.replace(/(.*)person$/,'$1'+"people");
+	str = str.replace(/(.*)child$/,'$1'+"children");
+	str = str.replace(/(.*)us$/,'$1'+"i");
+	str = str.replace(/(.*)is$/,'$1'+"es");
+	if (!isInArr(str,["roof","belief","chef","chief"]))
+		str = str.replace(/(.*)(f|fe)$/,'$1'+"ves");
+	str = str.replace(/(.*[^aeiou])y$/,'$1'+"ies");
+	if (!isInArr(str,["photo","piano","halo"]))
+		str = str.replace(/(.*)o$/,function(x){return x+"es"});
+	str = str.replace(/(.*)on$/,'$1'+"a");
+	str = str.replace(/(t|g|f)oo(th|se|t)$/,'$1'+"ee"+'$2');
+	if (str=="mouse")
+		str = "mice";
+	if (str == st)
+		str = str.replace(/.*(s|ss|sh|ch|x)$/,function(x){return x+"es";});
+	if (str == st)
+		return str + "s";
+	return str;
+}
+
 /** Takes a syllogism part in array form, with middle, subject and predicate,
 * and turns it into a string.
 * Syllogism array is [argument1,operator,argument2]; eg ['M','A','S'].
@@ -118,13 +150,13 @@ function parsify(arr, msparr)
   arr[0] = arr[0].replace(/M/,msparr[0]).replace(/S/,msparr[1]).replace(/P/,msparr[2]);
   arr[2] = arr[2].replace(/M/,msparr[0]).replace(/S/,msparr[1]).replace(/P/,msparr[2]);
   if (arr[1] == "A")
-		outstr = "All " + arr[0] + "s are " + arr[2] + "s";
+		outstr = "All " + pluralise(arr[0]) + " are " + pluralise(arr[2]);
 	if (arr[1] == "E")
-		outstr = "No " + arr[0] + "s are " + arr[2] + "s";
+		outstr = "No " + pluralise(arr[0]) + " are " + pluralise(arr[2]);
 	if (arr[1] == "I")
-		outstr = "Some " + arr[0] + "s are " + arr[2] + "s";
+		outstr = "Some " + pluralise(arr[0]) + " are " + pluralise(arr[2]);
 	if (arr[1] == "O")
-		outstr = "Some " + arr[0] + "s are not " + arr[2] + "s";
+		outstr = "Some " + pluralise(arr[0]) + " are not " + pluralise(arr[2]) + "s";
 	return outstr;
 }
 

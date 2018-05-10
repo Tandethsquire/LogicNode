@@ -438,3 +438,30 @@ function makeSyllogism(m,s,p,fig,isTrue,isExist)
 	}
 	return strarg;
 }
+
+function pluralise(st)
+{
+	var str = st;
+	if (isInArr(str,["sheep","fish","species","deer","series"]))
+		return str;
+	if (str!="human")
+		str = str.replace(/(.*)man$/,'$1'+"men");
+	str = str.replace(/(.*)person$/,'$1'+"people");
+	str = str.replace(/(.*)child$/,'$1'+"children");
+	str = str.replace(/(.*)us$/,'$1'+"i");
+	str = str.replace(/(.*)is$/,'$1'+"es");
+	if (!isInArr(str,["roof","belief","chef","chief"]))
+		str = str.replace(/(.*)(f|fe)$/,'$1'+"ves");
+	str = str.replace(/(.*[^aeiou])y$/,'$1'+"ies");
+	if (!isInArr(str,["photo","piano","halo"]))
+		str = str.replace(/(.*)o$/,function(x){return x+"es"});
+	str = str.replace(/(.*)on$/,'$1'+"a");
+	str = str.replace(/(t|g|f)oo(th|se|t)$/,'$1'+"ee"+'$2');
+	if (str=="mouse")
+		str = "mice";
+	if (str == st)
+		str = str.replace(/.*(s|ss|sh|ch|x)$/,function(x){return x+"es";});
+	if (str == st)
+		return str + "s";
+	return str;
+}
