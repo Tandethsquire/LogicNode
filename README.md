@@ -26,7 +26,7 @@ string_from_tree will produce the string "Q R OR NOT P AND". Usage of `make_comp
 A syllogism is a triplet of statements, consisting of a major premise, minor premise, and conclusion; the variables therein are predicate, middle and subject. Depending on the nature of the three statements, the syllogism can be valid, invalid, or valid under a further existential assumption (for details see, e.g. the <a href="https://en.wikipedia.org/wiki/Syllogism">Wiki</a> article). For a set of three categories, and a requirement of validity, one can generate a syllogism. There are two main methods in this: `makeSyllogism` and `parsify`.
 
 ## How to use
-Start with a set of three items that *can be pluralised in the most common way*. For example, the set {'gadget', 'grommet', 'widget'} is fine, but {'man','woman','person'} will not produce a grammatical syllogism. Choose a random number between 1 and 4 *(future project: have the figure choice as an optional parameter)* corresponding to the figure; i.e. the structure and placement of the predicate, middle, and subject. Choose if you want the generated syllogism to be valid - if it is to be valid, also choose whether it is only valid under an additional assumption. `makeSyllogism` then generates a HTML representation corresponding to this system.
+Start with a set of three items. Uses `pluralise` to create plurals: it is not a complete representation of the English language, so tread lightly! Choose a random number between 1 and 4 *(future project: have the figure choice as an optional parameter)* corresponding to the figure; i.e. the structure and placement of the predicate, middle, and subject. Choose if you want the generated syllogism to be valid - if it is to be valid, also choose whether it is only valid under an additional assumption. `makeSyllogism` then generates a HTML representation corresponding to this system.
 
 For example, taking ['gadget','grommet','widget'], figure 1, and the syllogism to be true under an additional assumption would be entered as
 ```JavaScript
@@ -70,6 +70,8 @@ For example
 ```Javascript
 parsify([M,I,P],['gadget','grommet','widget'])
 // Output is 'Some gadgets are widgets'
+parsify([P,A,S],['man','woman','person'])
+// Output is 'All women are people'
 ```
 
 ### `makeSyllogism`
