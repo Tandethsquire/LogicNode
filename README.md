@@ -65,6 +65,7 @@ Takes an array corresponding to the structure of line of the syllogism, and an a
 - E: "No...are..."
 - I: "Some...are..."
 - O: "Some...are not..."
+ 
 For example
 ```Javascript
 parsify([M,I,P],['gadget','grommet','widget'])
@@ -77,11 +78,13 @@ Takes an array of middle, subject, predicate; a figure type; a determiner for th
 2. P-M; S-M; S-P
 3. M-P; M-S; S-P
 4. P-M; M-S; S-P
+ 
 From the figure and the 'truthiness' required, it generates the relationships: there are 64 possibilities, only 6 of which are valid. Following the convention described in `parsify`, the valid syllogisms are
 1. AAA, EAE, AII, EIO, *AAI*, *EAO*
 2. EAE, AEE, EIO, AOO, *EAO*, *AEO*,
 3. AII, IAI, EIO, OAO, *EAO*, *AAI*
 4. AEE, IAI, EIO, *AEO*, *EAO*, *AAI*
+
 where the *italicised* patterns are valid under additional existence assumptions. If a false syllogism is required, it will randomly generate a string of three letters from {A,E,I,O} using `genPatt` and check that it isn't valid, regenerating as necessary.
 Once this has been generated, `parsify` is use to convert the symbolic statement into English.
 
