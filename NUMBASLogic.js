@@ -113,6 +113,7 @@ function pluralise(st)
 		return str;
 	if (str!="human")
 		str = str.replace(/(.*)man$/,'$1'+"men");
+  str = str.replace(/(.*)(i|e)x$/,'$1'+"ices");
 	str = str.replace(/(.*)person$/,'$1'+"people");
 	str = str.replace(/(.*)child$/,'$1'+"children");
 	str = str.replace(/(.*)us$/,'$1'+"i");
