@@ -346,34 +346,95 @@ function tree_to_canvas(valArr,cvs)
 	}
 }
 
-function copyArr(arr)
+function isInArr(elem,arr)
 {
-	var outarr = [], i;
+	var i;
 	for (i=0; i<arr.length; i++)
 	{
-		outarr.push(arr[i]);
+		if (arr[i] == elem)
+			return true;
 	}
-	return outarr;
+	return false;
 }
 
-function makeSyllogism(arr)
+function genPatt()
 {
-	if (arr.length>3)
-		return null;
-	var arr1 = copyArr(arr), arr2 = shuffle(copyArr(arr));
-	while (arr2[0]==arr1[2])
-		shuffle(arr2);
-	var args = arr1.concat(arr2);
-	console.log(args);
-	var connectives = shuffle([["All ","s"," are ","s"],["Some ",""," is a ",""],["No ","s"," are ","s"],["Some ",""," is not a ",""]]);
-	var i, tempstr = "";
+	var opts = ["A","E","I","O"], outstr = "", i;
 	for (i=0; i<3; i++)
 	{
-		var temparr = connectives[i];
-		if (i==2)
-			tempstr += "Therefore " + temparr[0].toLowerCase() + args[2*i] + temparr[1] + temparr[2] + args[2*i+1] + temparr[3] + ".";
-		else
-			tempstr += temparr[0] + args[2*i] + temparr[1] + temparr[2] + args[2*i+1] + temparr[3] + ";<br>";
+		outstr += shuffle(opts)[0];
 	}
-	return tempstr;
+	return outstr;
+}
+
+function parsify(arr,mid,sub,pred)
+{
+	var outstr;
+	arr[0] = arr[0].replace(/M/,mid).replace(/S/,sub).replace(/P/,pred);
+	arr[2] = arr[2].replace(/M/,mid).replace(/S/,sub).replace(/P/,pred);
+	if (arr[1] == "A")
+		outstr = "All " + arr[0] + "s are " + arr[2] + "s";
+	if (arr[1] == "E")
+		outstr = "No " + arr[0] + "s are " + arr[2] + "s";
+	if (arr[1] == "I")
+		outstr = "Some " + arr[0] + "s are " + arr[2] + "s";
+	if (arr[1] == "O")
+		outstr = "Some " + arr[0] + "s are not " + arr[2] + "s";
+	return outstr;
+}
+
+function makeSyllogism(m,s,p,fig,isTrue,isExist)
+{
+	var props, truepatts, existpatts, patt, i;
+	switch (fig)
+	{
+		case 1:
+			props = ["MP","SM","SP"];
+			truepatts = ["AAA","EAE","AII","EIO"];
+			existpatts = ["AAI","EAO"];
+			break;
+		case 2:
+			props = ["PM","SM","SP"];
+			truepatts = ["EAE","AEE","EIO","AOO"];
+			existpatts = ["EAO","AEO"];
+			break;
+		case 3:
+			props = ["MP","MS","SP"];
+			truepatts = ["AII","IAI","EIO","OAO"];
+			existpatts = ["EAO","AAI"];
+			break;
+		case 4:
+			props = ["PM","MS","SP"];
+			truepatts = ["AEE","IAI","EIO"];
+			existpatts = ["AEO","EAO","AAI"];
+			break;
+		default:
+			break;
+	}
+	if (isTrue)
+	{
+		if (isExist)
+			patt = existpatts[Math.floor(Math.random()*existpatts.length)];
+		else
+			patt = truepatts[Math.floor(Math.random()*truepatts.length)];
+	}
+	else
+	{
+		patt = genPatt();
+		while (isInArr(patt,truepatts.concat(existpatts)))
+			patt = genPatt();
+	}
+	var strarg = "";
+	for (i=0; i<3; i++)
+	{
+		var argarr = [props[i][0],patt[i],props[i][1]];
+		if (i==2)
+		{
+			var tempstr = parsify(argarr,m,s,p).replace(/[A-Z]/,function (x){return x.toLowerCase();});;
+			strarg += "Therefore " + tempstr + ".";
+		}
+		else
+			strarg += parsify(argarr,m,s,p) + ";<br>";
+	}
+	return strarg;
 }

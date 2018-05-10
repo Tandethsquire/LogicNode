@@ -43,7 +43,14 @@ for (i=Math.pow(2,args)-1; i>=0; i--)
 }
 tablestr += "</table>"
 indiv.innerHTML += tablestr;
-indiv.innerHTML += "<h3>Syllogism</h3>" + makeSyllogism(["widget","grommet","gadget"]);
+var truth = true;
+var exist = true;
+indiv.innerHTML += "<h3>Syllogism</h3>" + makeSyllogism("grommet","widget","gadget",4,truth,exist) + "<br>";
+indiv.innerHTML += "The syllogism is " + truth;
+if (truth && exist)
+  indiv.innerHTML += ", contingent on an existential assumption.";
+else
+  indiv.innerHTML += ".";
 tree_to_canvas(testCpts,'myCanvas');
 </script>
 </body>

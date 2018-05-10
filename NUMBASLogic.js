@@ -51,6 +51,151 @@ function make_components(operands,variables,nots)
   return outArr;
 }
 
+/** Values a statement in infix form given a set of truth values for the variables.
+The values can be presented as integers in {0,1} or as Boolean values.
+* @param {String}
+* @param {Array[Int]}
+*
+* @returns {Boolean}
+*/
+function evaluate(str,vals)
+{
+  str = str.replace(/NOT/g,"!").replace(/AND/g,"\&\&").replace(/OR/g,"||");
+  for (i=0; i<vals.length; i++)
+  {
+    var reg = new RegExp(String.fromCharCode(80+i),"g");
+    str = str.replace(reg,vals[i]);
+  }
+  return Boolean(eval(str));
+}
+
+/** Checks whether an element is in an array.
+* Maybe not necessary (might be a function in NUMBAS)
+* @param {String}
+* @param {Array}
+*
+* @returns {Boolean}
+*/
+function isInArr(elem,arr)
+{
+  var i;
+  for (i=0; i<arr.length; i++)
+  {
+    if (arr[i] == elem)
+      return true;
+  }
+  return false;
+}
+
+/** Generates a pattern for a syllogism. Used by makeSyllogism.
+* Uses standard form : A is 'All X are Y', E is 'No X are Y', I is 'Some X are Y', O is 'Some X are not Y'.
+* @returns {String}
+*/
+function genPatt()
+{
+  var opts = ["A","E","I","O"], outstr = "", i;
+  for (i=0; i<3; i++)
+  {
+    outstr += Numbas.math.shuffle(opts)[0];
+  }
+  return outstr;
+}
+
+/** Takes a syllogism part in array form, with middle, subject and predicate,
+* and turns it into a string.
+* Syllogism array is [argument1,operator,argument2]; eg ['M','A','S'].
+* mid-sub-pred array is in that order: [Middle, Subject, Predicate].
+* Only works if the subject, middle and predicate pluralise in the most common
+* English way (i.e. add an 's').
+* @param {Array}
+* @param {Array[String]}}
+*
+* @returns {String}
+*/
+function parsify(arr, msparr)
+{
+  var outstr;
+  arr[0] = arr[0].replace(/M/,msparr[0]).replace(/S/,msparr[1]).replace(/P/,msparr[2]);
+  arr[2] = arr[2].replace(/M/,msparr[0]).replace(/S/,msparr[1]).replace(/P/,msparr[2]);
+  if (arr[1] == "A")
+		outstr = "All " + arr[0] + "s are " + arr[2] + "s";
+	if (arr[1] == "E")
+		outstr = "No " + arr[0] + "s are " + arr[2] + "s";
+	if (arr[1] == "I")
+		outstr = "Some " + arr[0] + "s are " + arr[2] + "s";
+	if (arr[1] == "O")
+		outstr = "Some " + arr[0] + "s are not " + arr[2] + "s";
+	return outstr;
+}
+
+/** Takes an array in order [middle,subject,predicate], and a figure type and truthiness,
+* and generates a syllogism.
+* There are four figures: see Wikipedia for details.
+* There are three options for truthiness: the syllogism is true; it's true with
+* a further existential assumption, or it's false.
+* @param {Array[String]}
+* @param {Int}
+* @param {Boolean}
+* @param {Boolean}
+*
+* @returns {String}
+*/
+function makeSyllogism(msparr,fig,isTrue,isExist)
+{
+  var props, truepatts, existpatts, patt, i;
+	switch (fig)
+	{
+		case 1:
+			props = ["MP","SM","SP"];
+			truepatts = ["AAA","EAE","AII","EIO"];
+			existpatts = ["AAI","EAO"];
+			break;
+		case 2:
+			props = ["PM","SM","SP"];
+			truepatts = ["EAE","AEE","EIO","AOO"];
+			existpatts = ["EAO","AEO"];
+			break;
+		case 3:
+			props = ["MP","MS","SP"];
+			truepatts = ["AII","IAI","EIO","OAO"];
+			existpatts = ["EAO","AAI"];
+			break;
+		case 4:
+			props = ["PM","MS","SP"];
+			truepatts = ["AEE","IAI","EIO"];
+			existpatts = ["AEO","EAO","AAI"];
+			break;
+		default:
+			break;
+	}
+	if (isTrue)
+	{
+		if (isExist)
+			patt = existpatts[Math.floor(Math.random()*existpatts.length)];
+		else
+			patt = truepatts[Math.floor(Math.random()*truepatts.length)];
+	}
+	else
+	{
+		patt = genPatt();
+		while (isInArr(patt,truepatts.concat(existpatts)))
+			patt = genPatt();
+	}
+	var strarg = "";
+	for (i=0; i<3; i++)
+	{
+		var argarr = [props[i][0],patt[i],props[i][1]];
+		if (i==2)
+		{
+			var tempstr = parsify(argarr,msparr).replace(/[A-Z]/,function (x){return x.toLowerCase();});;
+			strarg += "Therefore " + tempstr + ".";
+		}
+		else
+			strarg += parsify(argarr,msparr) + ";<br>";
+	}
+	return strarg;
+}
+
 Numbas.addExtension('Logic',['jme','jme-display','math'],function(logic)
 {
   var logicScope = logic.scope;
@@ -219,6 +364,10 @@ Numbas.addExtension('Logic',['jme','jme-display','math'],function(logic)
   */
   function valuation(valArr,vals)
   {
+    if (!(valArr instanceof Array))
+    {
+      return evaluate(valArr,vals);
+    }
   	var i, nodeArr = build_tree(valArr);
   	for (i=0; i<nodeArr.length; i++)
   	{
@@ -236,13 +385,7 @@ Numbas.addExtension('Logic',['jme','jme-display','math'],function(logic)
   		}
   	}
   	var infix = string_from_tree(nodeArr,"in");
-  	infix = infix.replace(/NOT/g,"!").replace(/AND/g,"\&\&").replace(/OR/g,"||");
-  	for (i=0; i<vals.length; i++)
-  	{
-  		var reg = new RegExp(String.fromCharCode(80+i),"g");
-  		infix = infix.replace(reg,vals[i]);
-  	}
-  	return Boolean(eval(infix));
+  	return evaluate(infix,vals);
   }
 
   /** Generates a full truth table for a statement.
@@ -265,23 +408,30 @@ Numbas.addExtension('Logic',['jme','jme-display','math'],function(logic)
   *
   * @returns {string}
   */
-  function texify(rawstr)
+  function texify(rawstr, ownline)
   {
     rawstr = rawstr.replace(/\((NOT\s.)\)/g,'$1');
     rawstr = rawstr.replace(/AND/g,"\\wedge").replace(/OR/g,"\\vee").replace(/IMPLIES/g,"\\rightarrow").replace(/NOT/g,"\\neg");
-    return "$$" + rawstr + "$$";
+    if (ownline)
+      return "$$" + rawstr + "$$";
+    else
+      return "$" + rawstr + "$";
   }
 
   var funcObj = Numbas.jme.funcObj;
   var TString = Numbas.jme.types.TString;
   var TNum = Numbas.jme.types.TNum;
   var TList = Numbas.jme.types.TList;
-  var TBool = Numbas.jme.types.TBool
+  var TBool = Numbas.jme.types.TBool;
 
+  logicScope.addFunction(new funcObj('int_to_binary_array',[TNum,TNum],TList,function(n,len){return int_to_binary_array(n,len);},{unwrapValues: true}));
   logicScope.addFunction(new funcObj('make_components',[TNum,TNum,TNum],TList, function(ops,args,nots){return make_components(ops,args,nots);}, {unwrapValues: true}));
   logicScope.addFunction(new funcObj('string_from_tree',[TList,TString],TString, function(arr,how){return string_from_tree(arr,how);}, {unwrapValues: true}));
+  logicScope.addFunction(new funcObj('evaluate',[TString,TList],TBool,function(str,arr){return evaluate(str,arr);}, {unwrapValues: true}));
   logicScope.addFunction(new funcObj('truth_value',[TList,TList],TBool, function(arr,vals){return valuation(arr,vals);}, {unwrapValues: true}));
   logicScope.addFunction(new funcObj('truth_table_results',[TList,TNum],TList,function(str,noofvals){ return truth_table(str,noofvals);}, {unwrapValues: true}));
-  logicScope.addFunction(new funcObj('texify',[TString], TString, function(str){return texify(str);},{unwrapValues: true}));
+  logicScope.addFunction(new funcObj('truth_table_results',[TString,TNum],TList,function(str,noofvals){ return truth_table(str,noofvals);}, {unwrapValues: true}));
+  logicScope.addFunction(new funcObj('texify',[TString, TBool], TString, function(str,line){return texify(str,line);},{unwrapValues: true}));
+  logicScope.addFunction(new funcObj('syllogism',[TList,TNum,TBool,TBool],TString, function(arr,fig,tr,ex){return makeSyllogism(arr,fig,tr,ex);},{unwrapValues: true}));
 
 })
