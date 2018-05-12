@@ -60,7 +60,7 @@ make_components(2,2,1)
 ```
 
 ### `parsify`
-Takes an array corresponding to the structure of line of the syllogism, and an array of the middle, subject, predicate (in that order), and converts it into a grammatical English statement. In the first array, the ordering is [<Object>,<Relationship>,<Object>], where <Object> is one of M, S or P; relationship is converted as follows.
+Takes an array corresponding to the structure of line of the syllogism, and an array of the middle, subject, predicate (in that order), and converts it into a grammatical English statement. In the first array, the ordering is [O,R,O], where O is one of M, S or P; R is converted as follows.
 - A: "All...are..."
 - E: "No...are..."
 - I: "Some...are..."
