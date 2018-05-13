@@ -69,6 +69,20 @@ function evaluate(str,vals)
   return Boolean(eval(str));
 }
 
+/** Generates a full truth table for a statement.
+* @param {String}
+* @param {Int}
+*
+* @returns {Array[Boolean]}
+*/
+function truth_table(state, noofvals)
+{
+  var outArr = [], i;
+  for (i=Math.pow(2,noofvals)-1; i>=0; i--)
+    outArr.push(evaluate(state,int_to_binary_array(i,noofvals)));
+  return outArr;
+}
+
 /** Checks whether an element is in an array.
 * Maybe not necessary (might be a function in NUMBAS)
 * @param {String}
@@ -401,24 +415,24 @@ Numbas.addExtension('Logic',['jme','jme-display','math'],function(logic)
     {
       return evaluate(valArr,vals);
     }
-  	var i, nodeArr = build_tree(valArr);
-  	for (i=0; i<nodeArr.length; i++)
-  	{
-  		var nd = nodeArr[i];
-  		if (nd.value == "IMPLIES")
-  		{
-  			nd.value = "OR";
-  			var tempnd = nd.children[0];
-  			var notNode = new LogicNode("NOT");
-  			nd.remove_child();
-  			nd.add_child(notNode);
-  			nd.children.reverse();
-  			notNode.add_child(tempnd);
-  			nodeArr.push(notNode);
-  		}
-  	}
-  	var infix = string_from_tree(nodeArr,"in");
-  	return evaluate(infix,vals);
+    var i, nodeArr = build_tree(valArr);
+    for (i=0; i<nodeArr.length; i++)
+    {
+      var nd = nodeArr[i];
+      if (nd.value == "IMPLIES")
+      {
+        nd.value = "OR";
+        var tempnd = nd.children[0];
+        var notNode = new LogicNode("NOT");
+        nd.remove_child();
+        nd.add_child(notNode);
+        nd.children.reverse();
+        notNode.add_child(tempnd);
+        nodeArr.push(notNode);
+      }
+    }
+    var infix = string_from_tree(nodeArr,"in");
+    return evaluate(infix,vals);
   }
 
   /** Generates a full truth table for a statement.
@@ -429,10 +443,10 @@ Numbas.addExtension('Logic',['jme','jme-display','math'],function(logic)
   */
   function truth_table(valArr, noofvals)
   {
-  	var outArr = [], i;
-  	for (i=Math.pow(2,noofvals)-1; i>=0; i--)
-  		outArr.push(valuation(valArr,int_to_binary_array(i,noofvals)));
-  	return outArr;
+    var outArr = [], i;
+    for (i=Math.pow(2,noofvals)-1; i>=0; i--)
+      outArr.push(valuation(valArr,int_to_binary_array(i,noofvals)));
+    return outArr;
   }
 
   /** 'Prettifies' the output of a string: adds in the LaTeX symbols and strips out
