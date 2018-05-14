@@ -243,6 +243,45 @@ function makeSyllogism(msparr,fig,isTrue,isExist)
 	return strarg;
 }
 
+function statement_from_truth(arr,isDNF)
+{
+  var i, outstr = "(";
+	if (isDNF)
+		var connective = "AND", falsey = " NOT ", truthy = " ";
+	else
+		var connective = "OR", falsey = " ", truthy = " NOT ";
+  for (i=0; i<arr.length; i++)
+  {
+    if (arr[i] == 0)
+      outstr += falsey + String.fromCharCode(80+i) + " ";
+    else
+      outstr += truthy + String.fromCharCode(80+i) + " ";
+		if (i!=arr.length-1)
+    	outstr += " " + connective + " ";
+  }
+  outstr += ")";
+  return outstr.replace(/\(\s/g,"(").replace(/\s\)/g,")").replace(/\s+/g," ");
+}
+
+function normalForm(table,noofvbls,isDNF)
+{
+  var i, outstr = "";
+	if (isDNF)
+		var connective = " OR ";
+	else
+		var connective = " AND ";
+  for (i=0; i<table.length; i++)
+  {
+    if (table[i]==isDNF)
+    {
+      var pos = int_to_binary_array(Math.pow(2,noofvbls)-1-i,noofvbls);
+      outstr += statement_from_truth(pos,isDNF);
+      outstr += connective;
+    }
+  }
+  return outstr.replace(/(?:\sAND\s|\sOR\s)$/,"");
+}
+
 Numbas.addExtension('Logic',['jme','jme-display','math'],function(logic)
 {
   var logicScope = logic.scope;
@@ -480,5 +519,6 @@ Numbas.addExtension('Logic',['jme','jme-display','math'],function(logic)
   logicScope.addFunction(new funcObj('truth_table_results',[TString,TNum],TList,function(str,noofvals){ return truth_table(str,noofvals);}, {unwrapValues: true}));
   logicScope.addFunction(new funcObj('texify',[TString, TBool], TString, function(str,line){return texify(str,line);},{unwrapValues: true}));
   logicScope.addFunction(new funcObj('syllogism',[TList,TNum,TBool,TBool],TString, function(arr,fig,tr,ex){return makeSyllogism(arr,fig,tr,ex);},{unwrapValues: true}));
+  logicScope.addFunction(new funcObj('normal_form',[TList,TNum,TBool],TString,function(tab,n,dnf){return normalForm(tab,n,dnf);},{unwrapValues: true}));
 
 })

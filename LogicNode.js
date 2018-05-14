@@ -466,3 +466,42 @@ function pluralise(st)
 		return str + "s";
 	return str;
 }
+
+function statement_from_truth(arr,isDNF)
+{
+  var i, outstr = "(";
+	if (isDNF)
+		var connective = "AND", falsey = " NOT ", truthy = " ";
+	else
+		var connective = "OR", falsey = " ", truthy = " NOT ";
+  for (i=0; i<arr.length; i++)
+  {
+    if (arr[i] == 0)
+      outstr += falsey + String.fromCharCode(80+i) + " ";
+    else
+      outstr += truthy + String.fromCharCode(80+i) + " ";
+		if (i!=arr.length-1)
+    	outstr += " " + connective + " ";
+  }
+  outstr += ")";
+  return outstr.replace(/\(\s/g,"(").replace(/\s\)/g,")").replace(/\s+/g," ");
+}
+
+function NormalForm(table,noofvbls,isDNF)
+{
+  var i, outstr = "";
+	if (isDNF)
+		var connective = " OR ";
+	else
+		var connective = " AND ";
+  for (i=0; i<table.length; i++)
+  {
+    if (table[i]==isDNF)
+    {
+      var pos = int_to_binary_array(Math.pow(2,noofvbls)-1-i,noofvbls);
+      outstr += statement_from_truth(pos,isDNF);
+      outstr += connective;
+    }
+  }
+  return outstr.replace(/(?:\sAND\s|\sOR\s)$/,"");
+}
