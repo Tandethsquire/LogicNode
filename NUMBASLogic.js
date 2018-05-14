@@ -1,3 +1,11 @@
+/** Takes an integer and converts it to an array of bitwise values.
+* The second argument indicates how many bits are required.
+* Eg int_to_binary_array(6,4)=[0,1,0,1].
+* @param {Int}
+* @param {Int}
+*
+* @returns {Array[Int]}
+*/
 function int_to_binary_array(n, len)
 {
   var outArr = [];
@@ -11,6 +19,13 @@ function int_to_binary_array(n, len)
   return outArr.reverse();
 }
 
+/** Checks validity of an array, for building a parse tree.
+* A valid array must begin with AND/OR/NOT, it must always have as many variables
+* as operators (until the final element), and it must end with two variables.
+* @param {Array[String]}
+*
+* @returns {Boolean}
+*/
 function isValid(arr)
 {
   if (arr[0]!="AND"&&arr[0]!="OR"&&arr[0]!="IMPLIES")
@@ -30,6 +45,14 @@ function isValid(arr)
   return true;
 }
 
+/** Makes an array of nodes for the construction of parse trees.
+* Note: no more than 11 different variables can be used!
+* @param {Integer}
+* @param {Integer}
+* @param {Integer}
+*
+* @returns {Array[String]}
+*/
 function make_components(operands,variables,nots)
 {
   var varArr = [], opArr = ["AND","OR","IMPLIES"], outArr = [], k;
@@ -243,6 +266,16 @@ function makeSyllogism(msparr,fig,isTrue,isExist)
 	return strarg;
 }
 
+/** Generates the valuation for a given row of a truth table.
+* Used to furnish the Disjunctive/Conjunctive Normal forms.
+* The array given is a set of valuations for [P,Q,R...].
+* isDNF indicates whether we want disjunctive (connected by AND)
+* or conjunctive (connected by OR) form.
+* @param {Array[Int]}
+* @param {Boolean}
+*
+* @returns {String}
+*/
 function statement_from_truth(arr,isDNF)
 {
   var i, outstr = "(";
@@ -263,6 +296,13 @@ function statement_from_truth(arr,isDNF)
   return outstr.replace(/\(\s/g,"(").replace(/\s\)/g,")").replace(/\s+/g," ");
 }
 
+/** Generates the DNF or CNF for a truth table.
+* @param {Array[Int]}
+* @param {Int}
+* @param {Boolean}
+*
+* @returns {String}
+*/
 function normalForm(table,noofvbls,isDNF)
 {
   var i, outstr = "";
@@ -280,6 +320,41 @@ function normalForm(table,noofvbls,isDNF)
     }
   }
   return outstr.replace(/(?:\sAND\s|\sOR\s)$/,"");
+}
+
+/** For producing models (with make_model below). Checks whether an array,
+* when partitioned into 2-sets, has a set with identical elements.
+* @param {Array[String]}
+*
+* @returns {Boolean}
+*/
+function validModel(arr)
+{
+	if (arr.length%2!=0)
+		return false;
+	var i;
+	for (i=0; i<arr.length/2; i++)
+	{
+		if (arr[2*i]==arr[2*i+1])
+			return false;
+	}
+	return true;
+}
+
+/** 'Prettifies' the output of a string: adds in the LaTeX symbols and strips out
+some unecessary brackets.
+* @param {string}
+*
+* @returns {string}
+*/
+function texify(rawstr, ownline)
+{
+  rawstr = rawstr.replace(/\((NOT\s.)\)/g,'$1');
+  rawstr = rawstr.replace(/AND/g,"\\wedge").replace(/OR/g,"\\vee").replace(/IMPLIES/g,"\\rightarrow").replace(/NOT/g,"\\neg");
+  if (ownline)
+    return "$$" + rawstr + "$$";
+  else
+    return "$" + rawstr + "$";
 }
 
 Numbas.addExtension('Logic',['jme','jme-display','math'],function(logic)
@@ -488,20 +563,35 @@ Numbas.addExtension('Logic',['jme','jme-display','math'],function(logic)
     return outArr;
   }
 
-  /** 'Prettifies' the output of a string: adds in the LaTeX symbols and strips out
-  some unecessary brackets.
-  * @param {string}
+  /** Generates a model from a required number of statements and the number of
+  * arguments therein. Relies on validModel (above) to guarantee the model is
+  * reasonable and/or has no redundant statements.
+  * @param {Integer}
+  * @param {Integer}
   *
-  * @returns {string}
+  * @returns {String}
   */
-  function texify(rawstr, ownline)
+  function make_model(statements,args)
   {
-    rawstr = rawstr.replace(/\((NOT\s.)\)/g,'$1');
-    rawstr = rawstr.replace(/AND/g,"\\wedge").replace(/OR/g,"\\vee").replace(/IMPLIES/g,"\\rightarrow").replace(/NOT/g,"\\neg");
-    if (ownline)
-      return "$$" + rawstr + "$$";
-    else
-      return "$" + rawstr + "$";
+  	var i, j, outarr = [], argarr = [], feedarr = [];
+  	for (j=0; j<Math.max(1,Math.floor(2*statements/args)); j++)
+  	{
+  		for (i=0; i<args; i++)
+  		{
+  			argarr.push(String.fromCharCode(80+i));
+  		}
+  	}
+  	while ((argarr.length < statements*2)||(argarr.length%2==1))
+  	{
+  		argarr.push(Numbas.math.shuffle(argarr)[0]);
+  	}
+  	while (!validModel(argarr))
+  		argarr = Numbas.math.shuffle(argarr);
+  	for (i=0; i<statements; i++)
+  	{
+  		outarr.push(string_from_tree([["AND","OR","IMPLIES"][Math.floor(Math.random()*3)],argarr[2*i],argarr[2*i+1]],"in"));
+  	}
+  	return outarr;
   }
 
   var funcObj = Numbas.jme.funcObj;
@@ -510,6 +600,7 @@ Numbas.addExtension('Logic',['jme','jme-display','math'],function(logic)
   var TList = Numbas.jme.types.TList;
   var TBool = Numbas.jme.types.TBool;
 
+  // Declarations for any functions required to generate NUMBAS variables.
   logicScope.addFunction(new funcObj('int_to_binary_array',[TNum,TNum],TList,function(n,len){return int_to_binary_array(n,len);},{unwrapValues: true}));
   logicScope.addFunction(new funcObj('make_components',[TNum,TNum,TNum],TList, function(ops,args,nots){return make_components(ops,args,nots);}, {unwrapValues: true}));
   logicScope.addFunction(new funcObj('string_from_tree',[TList,TString],TString, function(arr,how){return string_from_tree(arr,how);}, {unwrapValues: true}));
@@ -520,5 +611,6 @@ Numbas.addExtension('Logic',['jme','jme-display','math'],function(logic)
   logicScope.addFunction(new funcObj('texify',[TString, TBool], TString, function(str,line){return texify(str,line);},{unwrapValues: true}));
   logicScope.addFunction(new funcObj('syllogism',[TList,TNum,TBool,TBool],TString, function(arr,fig,tr,ex){return makeSyllogism(arr,fig,tr,ex);},{unwrapValues: true}));
   logicScope.addFunction(new funcObj('normal_form',[TList,TNum,TBool],TString,function(tab,n,dnf){return normalForm(tab,n,dnf);},{unwrapValues: true}));
+  logicScope.addFunction(new funcObj('make_model',[TNum,TNum],TList,function(statements,args){return make_model(statements,args);},{unwrapValues: true}));
 
 })
