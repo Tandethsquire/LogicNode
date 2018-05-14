@@ -505,3 +505,39 @@ function NormalForm(table,noofvbls,isDNF)
   }
   return outstr.replace(/(?:\sAND\s|\sOR\s)$/,"");
 }
+
+function validModel(arr)
+{
+	if (arr.length%2!=0)
+		return false;
+	var i;
+	for (i=0; i<arr.length/2; i++)
+	{
+		if (arr[2*i]==arr[2*i+1])
+			return false;
+	}
+	return true;
+}
+
+function make_model(statements,args)
+{
+	var i, j, outarr = [], argarr = [], feedarr = [];
+	for (j=0; j<Math.max(Math.floor(2*statements/args),1); j++)
+	{
+		for (i=0; i<args; i++)
+		{
+			argarr.push(String.fromCharCode(80+i));
+		}
+	}
+	while ((argarr.length < statements*2) || (argarr.length%2==1))
+	{
+		argarr.push(shuffle(argarr)[0]);
+	}
+	while (!validModel(argarr))
+		argarr = shuffle(argarr);
+	for (i=0; i<statements; i++)
+	{
+		outarr.push(string_from_tree([["AND","OR","IMPLIES"][Math.floor(Math.random()*3)],argarr[2*i],argarr[2*i+1]],"in"));
+	}
+	return outarr;
+}
