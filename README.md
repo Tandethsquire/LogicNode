@@ -1,7 +1,7 @@
 Logic Node Package
 ==================
 
-A <a href="https://www.Numbas.org.uk">Numbas</a> extension for dealing with mathematical logic. It is in two parts: a pure JavaScript implementation and the converted form for use in NUMBAS. The JavaScript implementation and corresponding HMTL file is mainly a testing ground for the NUMBAS scripts, and as such should not be considered useful except for adding functions in a low-risk setting.
+A <a href="https://www.Numbas.org.uk">Numbas</a> extension for dealing with mathematical logic. It is in two parts: a pure JavaScript implementation (LogicNode.js) and the converted form for use in NUMBAS (Logic.js). The JavaScript implementation and corresponding HTML file is mainly a testing ground for the NUMBAS scripts, and as such should not be considered useful except for adding functions in a low-risk setting. **If you want to use this with NUMBAS, follow the instructions given <a href="http://numbas-editor.readthedocs.io/en/latest/extensions.html">here</a> with the file Logic.js**.
 
 # Logic Nodes
 
@@ -47,11 +47,11 @@ makeSyllogism(['gadget','grommet','gadget'],1,true,true);
 // Output could be:
 /* All gadgets are widgets;
 All grommets are gadgets;
-Therefore some grommet is a widget. */
+Therefore some grommets are widgets. */
 ```
 
 ## Object functions
-These descriptions are sparse in detail for some functions: if in doubt, see the comments in NUMBASLogic.js.
+These descriptions are sparse in detail for some functions: if in doubt, see the comments in Logic.js.
 ### `expected`
 Indicates how many arguments an operator takes (2 for a binary operator AND, OR, IMPLIES; 1 for a unary operator NOT, 0 if none of these options).
 ### `add_child`
@@ -120,7 +120,7 @@ Takes an array of middle, subject, predicate; a figure type; a determiner for th
 3. M-P; M-S; S-P
 4. P-M; M-S; S-P
 
-From the figure and the 'truthiness' required, it generates the relationships: there are 64 possibilities, only 6 of which are valid. Following the convention described in `parsify`, the valid syllogisms are
+From the figure and the 'truthiness' required, it generates the relationships: there are 64 possibilities, only 6 of which are valid for a given figure. Following the convention described in `parsify`, the valid syllogisms are
 1. AAA, EAE, AII, EIO, *AAI*, *EAO*
 2. EAE, AEE, EIO, AOO, *EAO*, *AEO*,
 3. AII, IAI, EIO, OAO, *EAO*, *AAI*
