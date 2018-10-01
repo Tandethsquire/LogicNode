@@ -510,12 +510,22 @@ function validModel(arr)
 {
 	if (arr.length%2!=0)
 		return false;
-	var i;
+	var i, j, k;
 	for (i=0; i<arr.length/2; i++)
 	{
 		if (arr[2*i]==arr[2*i+1])
 			return false;
 	}
+	for (j=0; j<arr.length/2; j++)
+  {
+    for (k=j+1; k<arr.length/2; k++)
+    {
+      var arr1 = [arr[j],arr[j+1]];
+      var arr2 = [arr[k],arr[k+1]];
+      if ((arr1[0]==arr2[0] && arr1[1]==arr2[1])||(arr1[1]==arr2[0]&&arr1[0]==arr2[1]))
+        return false;
+    }
+  }
 	return true;
 }
 
